@@ -1,0 +1,59 @@
+# Harbor — fictional coastal-AI demo persona for pebbles-scout v0.1.
+#
+# Harbor is the cross-package demo principal introduced in pebbles-core v0.2.
+# This file extends Harbor's Principal definition with pebbles-scout config:
+# topical clusters, relevance threshold, and RSS feed sources.
+#
+# Use this to verify pebbles-scout works on a stranger's machine without
+# Song-specific infrastructure.
+
+id: harbor
+name: Harbor
+mode: ai_persona
+
+voice_corpus: []
+voice_anchors:
+  description: "A fictional coastal-AI persona used as the family's reference instance."
+
+rubric: {}
+disclosure:
+  when_directly_asked: honest
+
+extra:
+  scout:
+    relevance_threshold: 0.55
+    clusters:
+      - cluster_id: maritime_tech
+        description: >
+          Marine technology, shipping innovation, autonomous vessels,
+          ocean instrumentation, navigational tooling.
+        weekly_min_candidates: 3
+        weekly_max_candidates: 30
+
+      - cluster_id: ocean_ecology
+        description: >
+          Marine biology, coral reef science, ocean conservation,
+          climate impact on marine ecosystems.
+        weekly_min_candidates: 3
+        weekly_max_candidates: 30
+
+      - cluster_id: coastal_storytelling
+        description: >
+          Coastal communities, fishing traditions, shoreline cultures,
+          long-form journalism about the sea.
+        weekly_min_candidates: 2
+        weekly_max_candidates: 20
+
+    sources:
+      rss:
+        feeds:
+          # Harbor's reference feeds — kept generic so the demo doesn't
+          # depend on any specific real-world RSS endpoint being available.
+          # Replace these with your own when adapting Harbor as a starter
+          # for your own principal config.
+          - url: "https://example.com/maritime-tech.xml"
+            cluster: maritime_tech
+          - url: "https://example.com/ocean-ecology.xml"
+            cluster: ocean_ecology
+          - url: "https://example.com/coastal-storytelling.xml"
+            cluster: coastal_storytelling
