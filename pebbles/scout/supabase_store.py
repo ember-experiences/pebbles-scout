@@ -84,7 +84,10 @@ def _row_to_candidate(row: dict) -> Candidate:
 
 
 def _candidate_to_row(candidate: Candidate) -> dict:
+    # Title: explicit metadata key first, then first line of target_content
     title = candidate.metadata.get("title", "")
+    if not title and candidate.target_content:
+        title = candidate.target_content.split("\n")[0].strip()
     image_url = candidate.metadata.get("image_url")
     platform = candidate.metadata.get("platform", candidate.platform)
     quality_score = None

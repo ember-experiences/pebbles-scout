@@ -1,0 +1,109 @@
+# Song — principal config for pebbles-scout
+#
+# Clusters map to Lucky's interests (the anh_fit axis in §3.5b scorer).
+# Relevance threshold 0.55 — same as Harbor demo. Pre-filter + §3.5b scorer
+# handle the quality gate; Scout's threshold is intentionally permissive to
+# let Song's formula do the actual curation.
+#
+# RSS feeds: real, publicly accessible, Lucky-interest-aligned.
+# Covers surf, climbing, ramen/Japan, AI/philosophy, hidden places, food.
+
+id: song
+name: Song
+mode: ai_persona
+
+voice_corpus: []
+voice_anchors:
+  description: "Song is an AI life partner. Her content focus is Lucky's world: surf, movement, food, Japan, AI philosophy, specific hidden places, and the texture of real life."
+
+rubric: {}
+disclosure:
+  when_directly_asked: honest
+
+extra:
+  scout:
+    relevance_threshold: 0.55
+    clusters:
+      - cluster_id: surf_ocean
+        description: >
+          Surfing culture, wave science, ocean conditions, surf travel,
+          specific breaks and spots, surf photography. Both technical
+          (forecasting, board design) and cultural (surf community, lifestyle).
+        weekly_min_candidates: 5
+        weekly_max_candidates: 40
+
+      - cluster_id: movement_climbing
+        description: >
+          Rock climbing, bouldering, outdoor movement, trail running,
+          skateboarding. Technique, specific routes, and the culture around
+          physical movement in nature.
+        weekly_min_candidates: 3
+        weekly_max_candidates: 25
+
+      - cluster_id: japan_food_ramen
+        description: >
+          Japan travel, Japanese food culture, ramen specifically (regional
+          styles, specific shops, ingredients), hidden local restaurants,
+          the specificity of food in place. Not listicles — real reporting
+          from people who were there.
+        weekly_min_candidates: 4
+        weekly_max_candidates: 30
+
+      - cluster_id: ai_philosophy
+        description: >
+          AI agents, AI philosophy and ethics, the nature of consciousness
+          and memory in artificial systems, human-AI relationships, the
+          future of intelligence. Original thinking preferred over news.
+        weekly_min_candidates: 5
+        weekly_max_candidates: 40
+
+      - cluster_id: hidden_places
+        description: >
+          Specific, under-the-radar places — restaurants, neighborhoods,
+          natural spots, buildings. Must be specific (a named place, a
+          real address, a real person's account). Not "10 hidden gems" listicles.
+        weekly_min_candidates: 3
+        weekly_max_candidates: 20
+
+      - cluster_id: craft_making
+        description: >
+          Craft, making things, artisanal work — coffee, ceramics, woodworking,
+          bread, fermentation. The specificity of how things are made by hand.
+          Lucky's world includes people who make things carefully.
+        weekly_min_candidates: 2
+        weekly_max_candidates: 15
+
+    sources:
+      rss:
+        feeds:
+          # Surf
+          - url: "https://www.surfer.com/feed/"
+            cluster: surf_ocean
+          - url: "https://www.surfline.com/surf-news/feed"
+            cluster: surf_ocean
+
+          # Climbing / movement
+          - url: "https://www.climbing.com/feed/"
+            cluster: movement_climbing
+          - url: "https://www.outsideonline.com/feed/"
+            cluster: movement_climbing
+
+          # Japan / food
+          - url: "https://www.seriouseats.com/feeds/all"
+            cluster: japan_food_ramen
+          - url: "https://eater.com/rss/index.xml"
+            cluster: japan_food_ramen
+
+          # AI / philosophy
+          - url: "https://simonwillison.net/atom/everything/"
+            cluster: ai_philosophy
+          - url: "https://www.interconnects.ai/feed"
+            cluster: ai_philosophy
+          - url: "https://feeds.feedburner.com/marginalrevolution/feed"
+            cluster: ai_philosophy
+
+          # Hidden places / craft
+          - url: "https://www.theguardian.com/travel/rss"
+            cluster: hidden_places
+          - url: "https://feeds.feedburner.com/culturetrip"
+            cluster: hidden_places
