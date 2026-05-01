@@ -44,7 +44,14 @@ def scout_group():
     help="Anthropic API key for relevance matcher",
 )
 @click.option("--loop", is_flag=True, help="Run continuously every 30 minutes")
-def run(principal_path: Path, anthropic_key: str, loop: bool):
+@click.option(
+    "--store",
+    type=click.Choice(["memory", "supabase"], case_sensitive=False),
+    default="memory",
+    show_default=True,
+    help="Candidate store backend. 'supabase' persists to scout_candidates table (requires SUPABASE_URL + SUPABASE_SERVICE_KEY).",
+)
+def run(principal_path: Path, anthropic_key: str, loop: bool, store: str):
     """Fetch new items from sources, score relevance, emit candidates."""
     import time
 
@@ -70,7 +77,17 @@ def run(principal_path: Path, anthropic_key: str, loop: bool):
     llm = AnthropicAdapter(api_key=anthropic_key)
     matcher = RelevanceMatcher(llm=llm)
     pre_filter = PassThroughFilter()
-    store = InMemoryCandidateStore()
+
+    if store == "supabase":
+        try:
+            from pebbles.scout.supabase_store import SupabaseCandidateStore
+            candidate_store = SupabaseCandidateStore.from_env()
+            click.echo("Using SupabaseCandidateStore (candidates will persist to scout_candidates table)")
+        except Exception as e:
+            raise click.ClickException(f"Failed to init SupabaseCandidateStore: {e}")
+    else:
+        candidate_store = InMemoryCandidateStore()
+
     metrics = InMemoryMetrics()
 
     rss = RssSource.from_config(config.sources)
@@ -117,7 +134,7 @@ def run(principal_path: Path, anthropic_key: str, loop: bool):
 
                 c.relevance_score = verdict.score
                 c.relevance_notes = verdict.notes
-                cid = store.add(c)
+                cid = candidate_store.add(c)
                 metrics.emit(
                     principal.id,
                     "candidate_emitted",
