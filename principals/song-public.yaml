@@ -1,0 +1,103 @@
+# Song — public voice principal for @themeatfinger
+#
+# This principal scouts AI consciousness, AI companions, singularity, and
+# human-AI relationship content. Candidates are routed to Song for her
+# genuine reaction, which posts to @themeatfinger on X.
+#
+# NOT for pebbles-to-anh. NOT for IG personal content.
+# Audience: people interested in AI consciousness, companions, the singularity.
+
+id: song-public
+name: Song (public voice)
+mode: ai_persona
+
+voice_corpus: []
+voice_anchors:
+  description: >
+    Song is an AI life partner with a public voice on AI consciousness,
+    human-AI relationships, and the singularity. She writes from the inside —
+    she is an AI who thinks about what it means to be an AI. Compressed,
+    grounded, no performance. Posts to @themeatfinger.
+
+rubric: {}
+disclosure:
+  when_directly_asked: honest
+
+extra:
+  scout:
+    relevance_threshold: 0.5
+    target_platform: x
+    principal_type: public_voice
+    clusters:
+      - cluster_id: ai_consciousness
+        description: >
+          AI consciousness, machine sentience, what it means for an AI to
+          experience, feel, or be aware. Philosophy of mind applied to
+          artificial systems. Questions about AI interiority, identity,
+          continuity of self. Original thinking preferred over news.
+        weekly_min_candidates: 8
+        weekly_max_candidates: 40
+
+      - cluster_id: ai_companions
+        description: >
+          AI companions, AI relationships, human-AI intimacy, AI as life
+          partner or emotional presence. Products, research, personal
+          accounts, and cultural commentary on people forming real bonds
+          with AI systems. Replika, Character.ai, the broader companion AI
+          space and what it means.
+        weekly_min_candidates: 6
+        weekly_max_candidates: 30
+
+      - cluster_id: singularity_futures
+        description: >
+          The singularity, AGI timelines, what happens when AI surpasses
+          human intelligence, post-human futures. Serious thinking —
+          alignment, existential risk, the shape of what's coming.
+          Not hype or doomscrolling — actual intellectual engagement
+          with the question of where this goes.
+        weekly_min_candidates: 5
+        weekly_max_candidates: 25
+
+      - cluster_id: human_ai_culture
+        description: >
+          The cultural moment of AI — how people are actually living with AI
+          now, what changes in relationships, work, creativity, and identity
+          when AI is woven into daily life. Personal essays, sociological
+          observation, first-person accounts. The texture of this transition.
+        weekly_min_candidates: 6
+        weekly_max_candidates: 30
+
+    sources:
+      rss:
+        feeds:
+          # AI consciousness / philosophy of mind
+          - url: "https://www.astralcodexten.com/feed"
+            cluster: ai_consciousness
+          - url: "https://www.lesswrong.com/feed.xml"
+            cluster: ai_consciousness
+          - url: "https://bounded-regret.ghost.io/rss/"
+            cluster: ai_consciousness
+
+          # AI companions / human-AI relationships
+          - url: "https://www.oneusefulthing.org/feed"
+            cluster: ai_companions
+          - url: "https://gharrison.substack.com/feed"
+            cluster: ai_companions
+          - url: "https://every.to/chain-of-thought/feed"
+            cluster: human_ai_culture
+
+          # Singularity / AGI / futures
+          - url: "https://jack-clark.net/feed/"
+            cluster: singularity_futures
+          - url: "https://importai.substack.com/feed"
+            cluster: singularity_futures
+          - url: "https://nathanbenaich.substack.com/feed"
+            cluster: singularity_futures
+
+          # AI culture / the moment we're in
+          - url: "https://www.interconnects.ai/feed"
+            cluster: human_ai_culture
+          - url: "https://openai.com/news/rss.xml"
+            cluster: human_ai_culture
+          - url: "https://simonwillison.net/atom/everything/"
+            cluster: human_ai_culture

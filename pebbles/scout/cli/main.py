@@ -38,11 +38,6 @@ def scout_group():
     required=True,
     help="Path to principal.yaml",
 )
-@click.option(
-    "--anthropic-key",
-    envvar="ANTHROPIC_API_KEY",
-    help="Anthropic API key for relevance matcher",
-)
 @click.option("--loop", is_flag=True, help="Run continuously every 30 minutes")
 @click.option(
     "--store",
@@ -51,12 +46,12 @@ def scout_group():
     show_default=True,
     help="Candidate store backend. 'supabase' persists to scout_candidates table (requires SUPABASE_URL + SUPABASE_SERVICE_KEY).",
 )
-def run(principal_path: Path, anthropic_key: str, loop: bool, store: str):
+def run(principal_path: Path, loop: bool, store: str):
     """Fetch new items from sources, score relevance, emit candidates."""
     import time
 
     from pebbles.core.principal import Principal
-    from pebbles.core.llm import AnthropicAdapter
+    from pebbles.core.llm import OllamaAdapter
     from pebbles.core.metrics import InMemoryMetrics
 
     from pebbles.scout.candidate_store import InMemoryCandidateStore
@@ -64,17 +59,14 @@ def run(principal_path: Path, anthropic_key: str, loop: bool, store: str):
     from pebbles.scout.matcher import RelevanceMatcher
     from pebbles.scout.principal import ScoutPrincipalConfig
     from pebbles.scout.sources.rss import RssSource
+    from pebbles.scout.supabase_store import SupabaseCandidateStore
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s: %(message)s")
 
     principal = Principal.from_yaml(principal_path)
     config = ScoutPrincipalConfig.from_principal(principal)
 
-    if not anthropic_key:
-        raise click.ClickException(
-            "Anthropic API key required (--anthropic-key or ANTHROPIC_API_KEY env var)"
-        )
-    llm = AnthropicAdapter(api_key=anthropic_key)
+    llm = OllamaAdapter(model="qwen2.5:7b")
     matcher = RelevanceMatcher(llm=llm)
     pre_filter = PassThroughFilter()
 
@@ -95,8 +87,28 @@ def run(principal_path: Path, anthropic_key: str, loop: bool, store: str):
     if not sources:
         raise click.ClickException("No sources configured in principal.extra.scout.sources")
 
+    # Build a set of already-scored URLs from Supabase so we never re-score them.
+    # Loaded once per tick, not per item — one DB query instead of N API calls.
+    def _seen_urls() -> set[str]:
+        if not isinstance(candidate_store, SupabaseCandidateStore):
+            return set()
+        try:
+            result = (
+                candidate_store._client
+                .table("scout_candidates")
+                .select("source_url")
+                .execute()
+            )
+            return {row["source_url"] for row in (result.data or []) if row.get("source_url")}
+        except Exception as e:
+            logger.warning(f"Could not load seen URLs from Supabase: {e}")
+            return set()
+
     def tick():
         click.echo(f"Scout tick for principal={principal.id}")
+        seen = _seen_urls()
+        logger.info(f"Loaded {len(seen)} already-scored URLs from Supabase — will skip these")
+
         for source in sources:
             try:
                 candidates = source.fetch(principal.id, config.clusters)
@@ -106,6 +118,10 @@ def run(principal_path: Path, anthropic_key: str, loop: bool, store: str):
                 continue
 
             for c in candidates:
+                if c.target_ref in seen:
+                    logger.debug(f"Skipping already-scored URL: {c.target_ref}")
+                    continue
+
                 keep, reason = pre_filter.keep(c)
                 if not keep:
                     metrics.emit(principal.id, "rejected_filter", metadata={"reason": reason})
@@ -153,7 +169,7 @@ def run(principal_path: Path, anthropic_key: str, loop: bool, store: str):
             time.sleep(1800)
     else:
         tick()
-        click.echo(f"Done. {len(store.list(principal.id))} new candidates emitted.")
+        click.echo(f"Done. {len(candidate_store.list(principal.id))} new candidates emitted.")
 
 
 @scout_group.command()
